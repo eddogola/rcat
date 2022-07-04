@@ -4,37 +4,52 @@ use std::io::Read;
 use std::path::Path;
 use std::io::BufReader;
 
+fn handle_filename(filename: &str) {
+    let path = Path::new(filename);
+    if !path.exists() {
+        eprintln!("rcat: {}: No such file or directory", filename);
+    } else if path.is_dir() {
+        eprintln!("rcat: {}: Is a directory", filename);
+    } else {
+        match fs::File::open(path) {
+            Ok(file) => {
+                let mut buf_reader = BufReader::new(file);
+                let mut content = String::new();
+                if let Err(e) = buf_reader.read_to_string(&mut content) {
+                    eprintln!("{}", e);
+                }
+                println!("{}", content.trim());
+            },
+            Err(e) => eprintln!("{}", e),
+        }
+    }
+}
+
 fn main() {
     // use env::args to panic when invalid unicode is entered
     // don't trust user input
-    let filenames = env::args().collect::<Vec<String>>();
+    let arguments = env::args().collect::<Vec<String>>();
 
-    if filenames.len() <= 1 {
+    if arguments.len() <= 1 {
         panic!("Please provide at least one filename")
     } else {
         // read from the second argument...
-        // if an error is associated with opening the file
-        // show the error and end the process
+        // if argument doesn't begin with `-`
+        // it's a filename
+        // pass it and all that follow to handle_filename
         
-        for filename in &filenames[1..] {
-            let path = Path::new(filename);
-            if !path.exists() {
-                eprintln!("rcat: {}: No such file or directory", filename);
-            } else if path.is_dir() {
-                eprintln!("rcat: {}: Is a directory", filename);
-            } else {
-                match fs::File::open(path) {
-                    Ok(file) => {
-                        let mut buf_reader = BufReader::new(file);
-                        let mut content = String::new();
-                        if let Err(e) = buf_reader.read_to_string(&mut content) {
-                            eprintln!("{}", e);
-                        }
-                        println!("{}", content.trim());
-                    },
-                    Err(e) => eprintln!("{}", e),
-                }
+        // is_filename flag 
+        // when true, everything that follows should be treated as a filename
+        let mut is_filename = false;
+        for arg in &arguments[1..] {
+            if !arg.starts_with('-') {
+                is_filename = true;
             }
+
+            if is_filename {
+                handle_filename(arg);
+            }
+            // else, handle options
         }
     }
 }
