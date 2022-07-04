@@ -5,11 +5,11 @@ use std::path::Path;
 use std::io::BufReader;
 use std::process;
 
-const OPTIONS: [&str;4] = [
-    "n", // number lines in each file independently
-    "b", // number nonblank lines
-    "e", // show ends - display `$` at end of each line
-    "h", // help
+const OPTIONS: [char;4] = [
+    'n', // number lines in each file independently
+    'b', // number nonblank lines
+    'e', // show ends - display `$` at end of each line
+    'h', // help
     ];
 
 fn handle_filename(filename: &str) {
@@ -33,11 +33,19 @@ fn handle_filename(filename: &str) {
     }
 }
 
-fn handle_option(option: &str) {
+fn handle_option(option: char) {
     if !OPTIONS.contains(&option) {
         eprintln!("rcat: illegal option -- {}", option);
         println!("rcat [-benh] [file ...]");
         process::exit(0);
+    } else {
+        // if `n`, number all lines in each file
+
+        // if `b`, only number non-blank lines
+
+        // if `e`, show $ at end of each line
+
+        // if `h`, show help message
     }
 }
 
@@ -64,8 +72,10 @@ fn main() {
 
             if is_filename {
                 handle_filename(arg);
+            } else {
+                let option = arg.as_bytes()[1] as char;
+                handle_option(option);
             }
-            // else, handle options
         }
     }
 }
