@@ -9,7 +9,6 @@ const OPTIONS: [char;4] = [
     'n', // number lines in each file independently
     'b', // number nonblank lines
     'e', // show ends - display `$` at end of each line
-    'h', // help
     ];
 
 fn handle_filename(filename: &str) {
@@ -44,8 +43,6 @@ fn handle_option(option: char) {
         // if `b`, only number non-blank lines
 
         // if `e`, show $ at end of each line
-
-        // if `h`, show help message
     }
 }
 
