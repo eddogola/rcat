@@ -54,7 +54,7 @@ fn handle_filename(filename: &str, config: &Config) {
                                 // show line number
                                 pre_line = line_count.to_string();
                             } else if config.number {
-                                post_line = line_count.to_string();
+                                pre_line = line_count.to_string();
                             }
 
                             // show line ends
@@ -67,7 +67,7 @@ fn handle_filename(filename: &str, config: &Config) {
                                                                 content,
                                                                 post_line);
 
-                            print!("{}", new_line)
+                            println!("{}", new_line)
                         },
                         Err(e) => eprintln!("Error reading line: {}", e),
                     }
