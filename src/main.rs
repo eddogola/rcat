@@ -53,8 +53,12 @@ fn handle_filename(filename: &str, config: &Config) {
                                 !content.is_empty() {                       // the line is nonblank
                                 // show line number
                                 pre_line = line_count.to_string();
-                            } else if config.number {
+                                // increment line count
+                                line_count += 1;
+                            } else if config.number && !config.number_nonblanks {
                                 pre_line = line_count.to_string();
+                                // increment line count
+                                line_count += 1;
                             }
 
                             // show line ends
@@ -71,8 +75,6 @@ fn handle_filename(filename: &str, config: &Config) {
                         },
                         Err(e) => eprintln!("Error reading line: {}", e),
                     }
-                    // increment line count
-                    line_count += 1;
                 }
                 
             },
