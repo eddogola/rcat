@@ -1,6 +1,6 @@
 use std::env;
 use std::fs;
-use std::io::Read;
+use std::io::BufRead;
 use std::path::Path;
 use std::io::BufReader;
 use std::process;
@@ -13,35 +13,17 @@ const OPTIONS: [char;3] = [
 
 struct Config {
     number: bool, // number lines in each file independently
-    number_blanks: bool, // number nonblank lines in each file independently
+    number_nonblanks: bool, // number nonblank lines in each file independently
     display_line_ends: bool, // show ends - display `$` at end of each line
 }
 
 impl Config {
 
-    fn new(number: bool, number_blanks: bool, display_line_ends: bool) -> Config {
+    fn new(number: bool, number_nonblanks: bool, display_line_ends: bool) -> Config {
         Config{
             number,
-            number_blanks,
+            number_nonblanks,
             display_line_ends,
-        }
-    }
-
-    fn number_lines(&self) {
-        if self.number {
-            // do something
-        }
-    }
-
-    fn number_blank_lines(&self) {
-        if self.number_blanks {
-            // do something
-        }
-    }
-
-    fn display_line_ends(&self) {
-        if self.display_line_ends {
-            // do something
         }
     }
 }
@@ -55,13 +37,43 @@ fn handle_filename(filename: &str, config: &Config) {
     } else {
         match fs::File::open(path) {
             Ok(file) => {
-                let mut buf_reader = BufReader::new(file);
-                let mut content = String::new();
-                if let Err(e) = buf_reader.read_to_string(&mut content) {
-                    eprintln!("{}", e);
+                let lines = BufReader::new(file).lines();
+
+                let mut line_count = 1;
+                for line in lines {
+                    match line {
+                        Ok(content) => {
+                            let mut pre_line = String::new();
+                            let mut post_line = String::new();
+
+                            if (config.number_nonblanks // if number nonblanks option is true
+                                ||                      // or
+                                (config.number_nonblanks && config.number)) // if both number lines and number non blanks option are true
+                                &&                                          // and
+                                !content.is_empty() {                       // the line is nonblank
+                                // show line number
+                                pre_line = line_count.to_string();
+                            } else if config.number {
+                                post_line = line_count.to_string();
+                            }
+
+                            // show line ends
+                            if config.display_line_ends {
+                                post_line = String::from("$");
+                            }
+
+                            let new_line = format!("{} {}{}", 
+                                                                pre_line,
+                                                                content,
+                                                                post_line);
+
+                            print!("{}", new_line)
+                        },
+                        Err(e) => eprintln!("Error reading line: {}", e),
+                    }
+                    // increment line count
+                    line_count += 1;
                 }
-                
-                println!("{}", content.trim()); // normal print
                 
             },
             Err(e) => eprintln!("{}", e),
@@ -81,7 +93,7 @@ fn handle_option(option: char, config: &mut Config) {
         }
         // if `b`, only number non-blank lines
         else if option == 'b' {
-            config.number_blanks = true;
+            config.number_nonblanks = true;
         }
         // if `e`, show $ at end of each line
         else if option == 'e' {
